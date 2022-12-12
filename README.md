@@ -1,4 +1,4 @@
-##Fonctionnement
+# Fonctionnement
 
 L'application suit un order linéaire pour créer deux ordres et ensuite affiche le prix du marché et la profondeur.
 Un choix est proposé pour supprimer un ordre (non fonctionnel)
