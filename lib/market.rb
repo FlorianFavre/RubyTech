@@ -40,6 +40,7 @@ class Market
     else
       @asks.delete_at(id)
     end
+    @orders.delete_at(id)
     puts "Order number #{id} canceled"
     puts "bids: #{@bids} \n
     base: #{@base} \n
