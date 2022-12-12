@@ -5,6 +5,43 @@ market = Market.new
 order_id = 1
 action = 0
 
+#-------------------Test-------------------
+#écrire des tests pour vérifier que les méthodes fonctionnent
+order = {
+  "order_id" => order_id,
+  "amount" => BigDecimal("0.0000254"),
+  "price" => BigDecimal("100.0"),
+  "side" => 1
+}
+order_id = order_id + 1
+market.submit(order)
+order = {
+  "order_id" => order_id,
+  "amount" => BigDecimal("0.000214"),
+  "price" => BigDecimal("200.0"),
+  "side" => 1
+}
+order_id = order_id + 1
+market.submit(order)
+order = {
+  "order_id" => order_id,
+  "amount" => BigDecimal("1.1254"),
+  "price" => BigDecimal("300.0"),
+  "side" => 2
+}
+order_id = order_id + 1
+market.submit(order)
+order = {
+  "order_id" => order_id,
+  "amount" => BigDecimal("0.36985"),
+  "price" => BigDecimal("400.0"),
+  "side" => 2
+}
+order_id = order_id + 1
+market.submit(order)
+
+#-------------------Menu-------------------
+
 while action != 5
   puts "\n *************************** \n"
   puts "You want to trade on the BTC/EUR market. Choose your action"
@@ -22,14 +59,14 @@ while action != 5
     puts "Buy (1) or sell (2):"
     side = gets.chomp.to_i
 
-    order_a = {
+    order = {
       "order_id" => order_id,
-      "amount" => amount,
-      "price" => price,
+      "amount" => amount.truncate(8),
+      "price" => price.truncate(2),
       "side" => side
     }
     order_id = order_id + 1
-    market.submit(order_a)
+    market.submit(order)
   end
 
   if action == 2
@@ -45,8 +82,8 @@ while action != 5
   if action == 4
     puts "You want to cancel an order: press id of order you want to cancel."
     num_order_cancel = gets.chomp.to_i
-    if num_order_cancel != 1 && num_order_cancel != 2
-      puts "No order was canceled"
+    if num_order_cancel > order_id
+      puts "No order was canceled with this id."
       exit
     else
       puts "Cancel order #{num_order_cancel}:"

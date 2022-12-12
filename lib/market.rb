@@ -27,17 +27,17 @@ class Market
       m_price_bids = 0
       m_price_asks = 0
       @bids.each do |bid|
-        if bid[0] > m_price_bids
-          m_price_bids = bid[0]
+        if bid[1] > m_price_bids
+          m_price_bids = bid[1]
         end
       end
       @asks.each do |ask|
-        if ask[0] < m_price_asks
-          m_price_asks = ask[0]
+        if ask[1] < m_price_asks
+          m_price_asks = ask[1]
         end
       end
       calc = (m_price_bids + m_price_asks) / 2      
-      return sprintf( "%.02f", calc)
+      return calc.round(2)
 
     end
   end
@@ -49,7 +49,7 @@ class Market
       depth =  "\n {\"bids\"=> \n["
       #parcours les bids et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
       @bids.each do |bid|
-        depth += "[\"#{sprintf( "%.02f", bid[0])}\", \"#{sprintf( "%.08f", bid[1])}\"],\n"
+        depth += "[\"#{bid[1]}\", \"#{bid[2]}\"],\n"
       end
       depth.delete_suffix!(",\n")
       depth += "]\n \"base\"=>\"#{@base}\", \n"
@@ -57,7 +57,7 @@ class Market
       #parcours les asks et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
       depth += "\"asks\"=> \n["
       @asks.each do |ask|
-        depth += "[\"#{sprintf( "%.02f", ask[0])}\", \"#{sprintf( "%.08f", ask[1])}\"],\n"
+        depth += "[\"#{ask[1]}\", \"#{ask[2]}\"],\n"
       end
       depth.delete_suffix!(",\n")
       puts depth += "]}\n"
@@ -71,14 +71,14 @@ class Market
     else
       side = 0
       @bids.each do |bid|
-        if(bid["order_id"] == id)
+        if(bid[0].to_i == id)
           side = 1
           @bids.delete_at(id-1)
         end
       end
       if side == 0
         @asks.each do |ask|
-          if(ask["order_id"] == id)
+          if(ask[0].to_i == id)
             @asks.delete_at(id-1)
           end
         end
