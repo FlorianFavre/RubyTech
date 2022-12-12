@@ -13,9 +13,9 @@ class Market
 
   def submit(order)
     if order["side"] == 1
-      @bids.append([order["price"], order["amount"]])
+      @bids.append([order["order_id"], order["price"], order["amount"]])
     elsif order["side"] == 2
-      @asks.append([order["price"], order["amount"]])
+      @asks.append([order["order_id"], order["price"], order["amount"]])
     end
     return "\n Order number #{order["order_id"]} submitted \n"
   end
@@ -51,15 +51,15 @@ class Market
       @bids.each do |bid|
         depth += "[\"#{sprintf( "%.02f", bid[0])}\", \"#{sprintf( "%.08f", bid[1])}\"],\n"
       end
-      depth -= ",\n"
-      depth += "]\n base=>\"#{@base}\", \n"
-      depth += "quote=>\"#{@quote}\", \n"
+      depth.delete_suffix!(",\n")
+      depth += "]\n \"base\"=>\"#{@base}\", \n"
+      depth += "\"quote\"=>\"#{@quote}\", \n"
       #parcours les asks et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
       depth += "\"asks\"=> \n["
       @asks.each do |ask|
         depth += "[\"#{sprintf( "%.02f", ask[0])}\", \"#{sprintf( "%.08f", ask[1])}\"],\n"
       end
-      depth -= ",\n"
+      depth.delete_suffix!(",\n")
       puts depth += "]}\n"
     end
   end
@@ -71,15 +71,15 @@ class Market
     else
       side = 0
       @bids.each do |bid|
-        if(bid[id] != nil)
+        if(bid["order_id"] == id)
           side = 1
-          @bids.delete_at(bid)
+          @bids.delete_at(id-1)
         end
       end
       if side == 0
         @asks.each do |ask|
-          if(ask[id] != nil)
-            @asks.delete_at(ask)
+          if(ask["order_id"] == id)
+            @asks.delete_at(id-1)
           end
         end
       end
