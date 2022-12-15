@@ -1,5 +1,8 @@
 require_relative 'market'
 require_relative 'user'
+require 'bigdecimal'
+require 'bigdecimal/util'
+
 class Order
   attr_accessor :order_id, :side, :price, :amount, :user_id, :state
 
@@ -10,6 +13,12 @@ class Order
     @amount = amount
     @user_id = user_id
     @state = 1
+  end
+
+  #change the state of the order to closed
+  def close_order
+    @state = 2
+    puts "Order number #{@order_id} closed \n"
   end
 
 

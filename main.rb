@@ -2,6 +2,7 @@ require_relative 'lib/market'
 require_relative 'lib/user'
 require_relative 'lib/order'
 require 'bigdecimal'
+require 'bigdecimal/util'
 
 #create a array of 4 users
 users = []
@@ -14,52 +15,73 @@ orders = []
 #add 4 users to the array users
 
 #initial user1 balance
-user1 = User.new(user_id, "Flo", "flo@test.com", BigDecimal("1"), BigDecimal("1000"))
+user1 = User.new(user_id, "Flo", "flo@test.com", BigDecimal("1500"), BigDecimal("0"))
 user_id = user_id + 1
 users.push(user1)
 
 #initial user2 balance
-user2 = User.new(user_id, "Mike", "Mike@test.com", BigDecimal("1"), BigDecimal("1000"))
+user2 = User.new(user_id, "Mike", "Mike@test.com", BigDecimal("1000"), BigDecimal("0"))
 user_id = user_id + 1
 users.push(user2)
 
 #initial user3 balance
-user3 = User.new(user_id, "John", "John@test.com", BigDecimal("1"), BigDecimal("1000"))
+user3 = User.new(user_id, "John", "John@test.com", BigDecimal("0"), BigDecimal("1"))
 user_id = user_id + 1
 users.push(user3)
 
 #initial user4 balance
-user4 = User.new(user_id, "Jane", "Jane]test.com", BigDecimal("1"), BigDecimal("1000"))
+user4 = User.new(user_id, "Jane", "Jane]test.com", BigDecimal("0"), BigDecimal("1"))
 user_id = user_id + 1
 users.push(user4)
 
 #-------------------Test-------------------
-order = Order.new(order_id, 1, BigDecimal("1"), BigDecimal("1000"), 1)
+order = Order.new(order_id, 1, BigDecimal("1500"), BigDecimal("1"), 1)
 order_id = order_id + 1
 if user1.add_order(order)
-  market.submit(order, users, orders)
+  market.submit(order)
+  market.match(order, users, orders)
   orders.push(order)
+else
+  puts "Order not submitted"
 end
 
-order = Order.new(order_id, 1, BigDecimal("1"), BigDecimal("1000"), 2)
+order = Order.new(order_id, 1, BigDecimal("1000"), BigDecimal("1"), 2)
 order_id = order_id + 1
-user2.add_order(order)
-market.submit(order, users, orders)
-orders.push(order)
+if user2.add_order(order)
+  user2.add_order(order)
+  market.submit(order)
+  market.match(order, users, orders)
+  orders.push(order)
+else
+  puts "Order not submitted"
+end
 
-order = Order.new(order_id, 2, BigDecimal("1"), BigDecimal("1000"), 3)
+order = Order.new(order_id, 2, BigDecimal("1500"), BigDecimal("1"), 3)
 order_id = order_id + 1
-user3.add_order(order)
-market.submit(order, users, orders)
-orders.push(order)
+if user4.add_order(order)
+  user3.add_order(order)
+  market.submit(order)
+  market.match(order, users, orders)
+  orders.push(order)
+else
+  puts "Order not submitted"
+end
 
-order = Order.new(order_id, 2, BigDecimal("1"), BigDecimal("1000"), 4)
+order = Order.new(order_id, 2, BigDecimal("1000"), BigDecimal("1"), 4)
 order_id = order_id + 1
-user4.add_order(order)
-market.submit(order, users, orders)
-orders.push(order)
+if user4.add_order(order)
+  user4.add_order(order)
+  market.submit(order)
+  market.match(order, users, orders)
+  orders.push(order)
+else
+  puts "Order not submitted"
+end
+
+
 
 #-------------------Menu-------------------
+=begin
 puts "\n *************************** \n"
 puts "You want to trade on the BTC/EUR market. Give me your name"
 name = gets.chomp
@@ -67,6 +89,7 @@ puts "Give me your email"
 email = gets.chomp
 user = users.find { |user| user.name == name && user.email == email }
 if user
+  users.push(user)
   while action != 5  
     puts "Welcome #{user.name}"
     puts "Choose your action"
@@ -84,7 +107,7 @@ if user
       puts "Buy (1) or sell (2):"
       side = gets.chomp.to_i
 
-      Order.new(order_id, 1, BigDecimal("100.0"), BigDecimal("1"), 1)
+      Order.new(order_id, 1, price, amount, 1)
 
       order = {
         "order_id" => order_id,
@@ -93,7 +116,10 @@ if user
         "side" => side
       }
       order_id = order_id + 1
-      market.submit(order)
+      if user.add_order(order)
+        market.submit(order, users, orders)
+        orders.push(order)
+      end
     end
 
     if action == 2
@@ -124,4 +150,4 @@ if user
   end
 
 end
-
+=end

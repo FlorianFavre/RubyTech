@@ -14,15 +14,13 @@ class Market
     @matches = []
   end
 
-  def submit(order, users, orders)
+  def submit(order)
     if order.side == 1
       @bids << order
     elsif order.side == 2
       @asks << order
     end
-    puts "Order number #{order.order_id} submitted \n"
-
-    match(order, users, orders)
+    puts "Order number #{order.order_id} submitted \n"    
   end
 
   def market_price
@@ -96,57 +94,79 @@ class Market
     end
   end
 
-    def match(order, users, orders)
-      # Compare the first bid and ask to see if they match
-      if @bids.length > 0 && @asks.length > 0
-        bid = @bids[0]
-        ask = @asks[0]
-  
-        # Check if the orders match
-        if bid.side != ask.side &&
-            bid.price == ask.price &&
-            bid.amount == ask.amount
-  
-          # Remove the matched orders from the market
-          @bids.shift
-          @asks.shift
+  def match(order, users, orders)
+    # Compare the first bid and ask to see if they match
+    if @bids.length > 0 && @asks.length > 0
+      bid = @bids[0]
+      ask = @asks[0]
 
-          puts "*** MATCHED ***"
-          puts order.user_id
-          puts "Order number #{bid.order_id} matched with order number #{ask.order_id}"
-          puts "Amount: #{bid.amount.round(8).to_s("F")}"
-          puts "Price: #{bid.price.round(8).to_s("F")}"
-          puts "Side: #{bid.side}"
-          puts "Timestamp: #{Time.now}"
-          puts "****************"
-  
-          #parcours users pour changer les balances
-          users.each do |user|
-            puts user.user_id
-            if user.user_id == bid.user_id
-              user.btc_balance = user.btc_balance - bid.amount
+      # Check if the orders match
+      if bid.side != ask.side &&
+          bid.price == ask.price &&
+          bid.amount == ask.amount
+
+          order.close_order
+
+        # Remove the matched orders from the market
+        @bids.shift
+        @asks.shift
+
+        puts "*** MATCHED ***"
+        puts "Order number #{bid.order_id} matched with order number #{ask.order_id}"
+        puts "****************"
+
+        #change balance of users
+        users.each do |user|
+          puts user.user_id
+          if user.user_id == ask.user_id
+            if user.btc_balance - order.amount >= 0
+              user.btc_balance = user.btc_balance - order.amount
               user.eur_balance = user.eur_balance + bid.amount * bid.price
+              user.close_order(ask.order_id)
+            else
+              puts "Insufficient btc_balance \n"
+              puts user.btc_balance.round(8).to_s("F")
+              puts order.amount.round(8).to_s("F")
+              return false
             end
-            if user.user_id == ask.user_id
-              user.btc_balance = user.btc_balance + ask.amount
+          end
+          if user.user_id == bid.user_id
+            if user.eur_balance - ask.amount * ask.price >= 0
+              user.btc_balance = user.btc_balance + order.amount
               user.eur_balance = user.eur_balance - ask.amount * ask.price
+              user.close_order(bid.order_id)
+            else
+              puts "Insufficient funds \n"
+              puts user.eur_balance.round(8).to_s("F")
+              puts (ask.amount * ask.price).round(8).to_s("F")
+              return false
             end
           end
-
-          #affiche tous les users et leurs balances
-          users.each do |user|
-            puts "User #{user.user_id} has #{user.btc_balance.round(8).to_s("F")} BTC and #{user.eur_balance.round(2).to_s("F")} EUR"
-          end
-  
-          # Save the match
-          @matches << {
-            "order_id" => bid.order_id,
-            "amount" => bid.amount,
-            "price" => bid.price,
-            "side" => bid.side,
-            "timestamp" => Time.now
-          }
         end
+
+        #see users and balances
+        users.each do |user|
+          puts "User #{user.user_id} has #{user.btc_balance.round(8).to_s("F")} BTC and #{user.eur_balance.round(2).to_s("F")} EUR"
+        end
+
+        #delete this order from orders if bid and ask match
+        orders.delete_if { order.order_id == bid.order_id || order.order_id == ask.order_id}   
+
+        #see orders
+        orders.each do |order|
+          puts "Order number #{order.order_id} has #{order.amount.round(8).to_s("F")} BTC and #{order.price.round(2).to_s("F")} EUR"
+        end
+
+        #save the match
+        @matches << {
+          "order_id" => bid.order_id,
+          "amount" => bid.amount,
+          "price" => bid.price,
+          "side" => bid.side,
+          "timestamp" => Time.now
+        }
       end
-    end 
+    puts "no match"
+    end
+  end 
 end

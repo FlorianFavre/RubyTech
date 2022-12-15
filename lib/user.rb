@@ -1,9 +1,12 @@
 require_relative 'market'
 require_relative 'order'
+require 'bigdecimal'
+require 'bigdecimal/util'
+
 class User
   attr_accessor :user_id, :name, :email, :btc_balance, :eur_balance, :orders
 
-  def initialize(user_id, name, email, btc_balance, eur_balance)
+  def initialize(user_id, name, email, eur_balance, btc_balance )
     @user_id = user_id
     @name = name
     @email = email
@@ -53,6 +56,7 @@ class User
     @orders.each do |order|
       if order.order_id == order_id
         order.state = 2
+        #puts "Order number #{order_id} closed for user #{user_id}\n"
       end
     end
   end  
