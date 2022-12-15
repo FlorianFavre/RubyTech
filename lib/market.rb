@@ -1,3 +1,5 @@
+require_relative 'user'
+require_relative 'order'
 require 'bigdecimal'
 require 'bigdecimal/util'
 
@@ -8,16 +10,19 @@ class Market
     @base = "BTC"
     @quote = "EUR"
     @bids = []
-    @asks = []
+    @asks = []    
+    @matches = []
   end
 
-  def submit(order)
-    if order["side"] == 1
-      @bids.append([order["order_id"], order["price"], order["amount"]])
-    elsif order["side"] == 2
-      @asks.append([order["order_id"], order["price"], order["amount"]])
+  def submit(order, users, orders)
+    if order.side == 1
+      @bids << order
+    elsif order.side == 2
+      @asks << order
     end
-    return "\n Order number #{order["order_id"]} submitted \n"
+    puts "Order number #{order.order_id} submitted \n"
+
+    match(order, users, orders)
   end
 
   def market_price
@@ -28,37 +33,36 @@ class Market
       m_price_asks = BigDecimal(0)
       calc = BigDecimal(0)
       @bids.each do |bid|
-        if bid[1] > m_price_bids
-          m_price_bids = bid[1]
+        if bid.price > m_price_bids
+          m_price_bids = bid.price
         end
       end
       @asks.each do |ask|
-        if ask[1] < m_price_asks
-          m_price_asks = ask[1]
+        if ask.price. < m_price_asks
+          m_price_asks = ask.price
         end
       end
       calc = (m_price_bids + m_price_asks) / 2
       puts calc.round(2).to_s("F")
-
     end
   end
 
-  def market_depth
+  def market_depth    
     if(@bids.empty? || @asks.empty?)
       return "\n No market price \n"
     else
       depth =  "\n {\"bids\"=> \n["
-      #parcours les bids et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
+      #iterate through the bids and transform the price column into a float, the amount column into a decimal with eight decimal places
       @bids.each do |bid|
-        depth += "[\"#{bid[1].round(2).to_s("F")}\", \"#{bid[2].round(8).to_s("F")}\"],\n"
+        depth += "[\"#{bid.price.round(2).to_s("F")}\", \"#{bid.amount.round(8).to_s("F")}\"],\n"
       end
       depth.delete_suffix!(",\n")
       depth += "]\n \"base\"=>\"#{@base}\", \n"
       depth += "\"quote\"=>\"#{@quote}\", \n"
-      #parcours les asks et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
+      #iterates through the asks and transforms the price column into a float, the amount column into a decimal with eight decimal places
       depth += "\"asks\"=> \n["
       @asks.each do |ask|
-        depth += "[\"#{ask[1].round(2).to_s("F")}\", \"#{ask[2].round(8).to_s("F")}\"],\n"
+        depth += "[\"#{ask.price.round(2).to_s("F")}\", \"#{ask.amount.round(8).to_s("F")}\"],\n"
       end
       depth.delete_suffix!(",\n")
       puts depth += "]}\n"
@@ -89,8 +93,60 @@ class Market
       base: #{@base} \n
       quote: #{@quote} \n
       asks: #{@asks}"
-
     end
-    
   end
+
+    def match(order, users, orders)
+      # Compare the first bid and ask to see if they match
+      if @bids.length > 0 && @asks.length > 0
+        bid = @bids[0]
+        ask = @asks[0]
+  
+        # Check if the orders match
+        if bid.side != ask.side &&
+            bid.price == ask.price &&
+            bid.amount == ask.amount
+  
+          # Remove the matched orders from the market
+          @bids.shift
+          @asks.shift
+
+          puts "*** MATCHED ***"
+          puts order.user_id
+          puts "Order number #{bid.order_id} matched with order number #{ask.order_id}"
+          puts "Amount: #{bid.amount.round(8).to_s("F")}"
+          puts "Price: #{bid.price.round(8).to_s("F")}"
+          puts "Side: #{bid.side}"
+          puts "Timestamp: #{Time.now}"
+          puts "****************"
+  
+          #parcours users pour changer les balances
+          users.each do |user|
+            puts user.user_id
+            if user.user_id == bid.user_id
+              user.btc_balance = user.btc_balance - bid.amount
+              user.eur_balance = user.eur_balance + bid.amount * bid.price
+            end
+            if user.user_id == ask.user_id
+              user.btc_balance = user.btc_balance + ask.amount
+              user.eur_balance = user.eur_balance - ask.amount * ask.price
+            end
+          end
+
+          #affiche tous les users et leurs balances
+          users.each do |user|
+            puts "User #{user.user_id} has #{user.btc_balance.round(8).to_s("F")} BTC and #{user.eur_balance.round(2).to_s("F")} EUR"
+          end
+  
+          # Save the match
+          @matches << {
+            "order_id" => bid.order_id,
+            "amount" => bid.amount,
+            "price" => bid.price,
+            "side" => bid.side,
+            "timestamp" => Time.now
+          }
+        end
+      end
+    end 
 end
