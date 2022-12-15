@@ -24,8 +24,9 @@ class Market
     if(@bids.empty? || @asks.empty?)
       return "\n No market price \n"
     else
-      m_price_bids = 0
-      m_price_asks = 0
+      m_price_bids = BigDecimal(0)
+      m_price_asks = BigDecimal(0)
+      calc = BigDecimal(0)
       @bids.each do |bid|
         if bid[1] > m_price_bids
           m_price_bids = bid[1]
@@ -36,8 +37,8 @@ class Market
           m_price_asks = ask[1]
         end
       end
-      calc = (m_price_bids + m_price_asks) / 2      
-      return calc.round(2)
+      calc = (m_price_bids + m_price_asks) / 2
+      puts calc.round(2).to_s("F")
 
     end
   end
@@ -49,7 +50,7 @@ class Market
       depth =  "\n {\"bids\"=> \n["
       #parcours les bids et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
       @bids.each do |bid|
-        depth += "[\"#{bid[1]}\", \"#{bid[2]}\"],\n"
+        depth += "[\"#{bid[1].round(2).to_s("F")}\", \"#{bid[2].round(8).to_s("F")}\"],\n"
       end
       depth.delete_suffix!(",\n")
       depth += "]\n \"base\"=>\"#{@base}\", \n"
@@ -57,7 +58,7 @@ class Market
       #parcours les asks et transforme la colonne price en float, la colonne amount en décimale avec huit chiffres après la virgule
       depth += "\"asks\"=> \n["
       @asks.each do |ask|
-        depth += "[\"#{ask[1]}\", \"#{ask[2]}\"],\n"
+        depth += "[\"#{ask[1].round(2).to_s("F")}\", \"#{ask[2].round(8).to_s("F")}\"],\n"
       end
       depth.delete_suffix!(",\n")
       puts depth += "]}\n"

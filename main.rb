@@ -6,7 +6,7 @@ order_id = 1
 action = 0
 
 #-------------------Test-------------------
-#écrire des tests pour vérifier que les méthodes fonctionnent
+
 order = {
   "order_id" => order_id,
   "amount" => BigDecimal("0.0000254"),
@@ -26,7 +26,7 @@ market.submit(order)
 order = {
   "order_id" => order_id,
   "amount" => BigDecimal("1.1254"),
-  "price" => BigDecimal("300.0"),
+  "price" => BigDecimal("300.00"),
   "side" => 2
 }
 order_id = order_id + 1
@@ -34,7 +34,7 @@ market.submit(order)
 order = {
   "order_id" => order_id,
   "amount" => BigDecimal("0.36985"),
-  "price" => BigDecimal("400.0"),
+  "price" => BigDecimal("400.00"),
   "side" => 2
 }
 order_id = order_id + 1
@@ -61,8 +61,8 @@ while action != 5
 
     order = {
       "order_id" => order_id,
-      "amount" => amount.truncate(8),
-      "price" => price.truncate(2),
+      "amount" => amount,
+      "price" => price,
       "side" => side
     }
     order_id = order_id + 1
@@ -76,7 +76,7 @@ while action != 5
 
   if action == 3
     puts "Market price:"
-    puts market.market_price
+    market.market_price
   end
 
   if action == 4
