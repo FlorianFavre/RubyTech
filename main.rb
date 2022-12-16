@@ -58,7 +58,7 @@ end
 
 order = Order.new(order_id, 2, BigDecimal("1500"), BigDecimal("1"), 3)
 order_id = order_id + 1
-if user4.add_order(order)
+if user3.add_order(order)
   user3.add_order(order)
   market.submit(order)
   market.match(order, users, orders)
