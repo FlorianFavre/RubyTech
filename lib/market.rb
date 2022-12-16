@@ -115,13 +115,18 @@ class Market
         puts "Order number #{bid.order_id} matched with order number #{ask.order_id}"
         puts "****************"
 
+        puts bid.amount.round(8).to_s("F")
+
+        #calculate fees
+        bid_fee = bid.price * 0.0025
+
         #change balance of users
         users.each do |user|
           puts user.user_id
           if user.user_id == ask.user_id
             if user.btc_balance - order.amount >= 0
               user.btc_balance = user.btc_balance - order.amount
-              user.eur_balance = user.eur_balance + bid.amount * bid.price
+              user.eur_balance = user.eur_balance + bid.amount * bid.price - bid_fee / 2
               user.close_order(ask.order_id)
             else
               puts "Insufficient btc_balance \n"
@@ -133,7 +138,7 @@ class Market
           if user.user_id == bid.user_id
             if user.eur_balance - ask.amount * ask.price >= 0
               user.btc_balance = user.btc_balance + order.amount
-              user.eur_balance = user.eur_balance - ask.amount * ask.price
+              user.eur_balance = user.eur_balance - ask.amount * ask.price  - bid_fee / 2
               user.close_order(bid.order_id)
             else
               puts "Insufficient funds \n"
@@ -144,9 +149,13 @@ class Market
           end
         end
 
+        users.first.eur_balance = users.first.eur_balance + bid_fee
+        puts "Fee user have:"
+        puts users.first.eur_balance.round(8).to_s("F")
+
         #see users and balances
         users.each do |user|
-          puts "User #{user.user_id} has #{user.btc_balance.round(8).to_s("F")} BTC and #{user.eur_balance.round(2).to_s("F")} EUR"
+          puts "User #{user.user_id} has #{user.btc_balance.to_s("F")} BTC and #{user.eur_balance.to_s("F")} EUR"
         end
 
         #delete this order from orders if bid and ask match
@@ -154,7 +163,7 @@ class Market
 
         #see orders
         orders.each do |order|
-          puts "Order number #{order.order_id} has #{order.amount.round(8).to_s("F")} BTC and #{order.price.round(2).to_s("F")} EUR"
+          puts "Order number #{order.order_id} has #{order.amount.to_s("F")} BTC and #{order.price.to_s("F")} EUR"
         end
 
         #save the match

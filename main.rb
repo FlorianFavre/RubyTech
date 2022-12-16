@@ -12,43 +12,25 @@ order_id = 1
 action = 0
 orders = []
 
-#add 4 users to the array users
+#create fee user
+fee_user = User.new(user_id, "Fee", "admin@paymi.com", BigDecimal("0"), BigDecimal("0"))
+user_id = user_id + 1
+users.push(fee_user)
 
 #initial user1 balance
-user1 = User.new(user_id, "Flo", "flo@test.com", BigDecimal("1500"), BigDecimal("0"))
-user_id = user_id + 1
-users.push(user1)
-
-#initial user2 balance
-user2 = User.new(user_id, "Mike", "Mike@test.com", BigDecimal("1000"), BigDecimal("0"))
+user2 = User.new(user_id, "Flo", "flo@test.com", BigDecimal("45000"), BigDecimal("0"))
 user_id = user_id + 1
 users.push(user2)
 
-#initial user3 balance
-user3 = User.new(user_id, "John", "John@test.com", BigDecimal("0"), BigDecimal("1"))
+#initial user2 balance
+user3 = User.new(user_id, "John", "John@test.com", BigDecimal("0"), BigDecimal("3"))
 user_id = user_id + 1
 users.push(user3)
 
-#initial user4 balance
-user4 = User.new(user_id, "Jane", "Jane]test.com", BigDecimal("0"), BigDecimal("1"))
-user_id = user_id + 1
-users.push(user4)
-
 #-------------------Test-------------------
-order = Order.new(order_id, 1, BigDecimal("1500"), BigDecimal("1"), 1)
-order_id = order_id + 1
-if user1.add_order(order)
-  market.submit(order)
-  market.match(order, users, orders)
-  orders.push(order)
-else
-  puts "Order not submitted"
-end
-
-order = Order.new(order_id, 1, BigDecimal("1000"), BigDecimal("1"), 2)
+order = Order.new(order_id, 1, BigDecimal("27000"), BigDecimal("1"), 2)
 order_id = order_id + 1
 if user2.add_order(order)
-  user2.add_order(order)
   market.submit(order)
   market.match(order, users, orders)
   orders.push(order)
@@ -56,28 +38,15 @@ else
   puts "Order not submitted"
 end
 
-order = Order.new(order_id, 2, BigDecimal("1500"), BigDecimal("1"), 3)
+order = Order.new(order_id, 2, BigDecimal("27000"), BigDecimal("1"), 3)
 order_id = order_id + 1
-if user4.add_order(order)
-  user3.add_order(order)
+if user3.add_order(order)
   market.submit(order)
   market.match(order, users, orders)
   orders.push(order)
 else
   puts "Order not submitted"
 end
-
-order = Order.new(order_id, 2, BigDecimal("1000"), BigDecimal("1"), 4)
-order_id = order_id + 1
-if user4.add_order(order)
-  user4.add_order(order)
-  market.submit(order)
-  market.match(order, users, orders)
-  orders.push(order)
-else
-  puts "Order not submitted"
-end
-
 
 
 #-------------------Menu-------------------
