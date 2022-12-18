@@ -7,7 +7,7 @@ class Market
   attr_accessor :bids, :base, :quote, :asks
 
   def initialize
-    @base = "BTC"
+    @base = ""
     @quote = "EUR"
     @bids = []
     @asks = []    
@@ -94,88 +94,5 @@ class Market
     end
   end
 
-  def match(order, users, orders)
-    # Compare the first bid and ask to see if they match
-    if @bids.length > 0 && @asks.length > 0
-      bid = @bids[0]
-      ask = @asks[0]
-
-      # Check if the orders match
-      if bid.side != ask.side &&
-          bid.price == ask.price &&
-          bid.amount == ask.amount
-
-          order.close_order
-
-        # Remove the matched orders from the market
-        @bids.shift
-        @asks.shift
-
-        puts "*** MATCHED ***"
-        puts "Order number #{bid.order_id} matched with order number #{ask.order_id}"
-        puts "****************"
-
-        puts bid.amount.round(8).to_s("F")
-
-        #calculate fees
-        bid_fee = bid.price * 0.0025
-
-        #change balance of users
-        users.each do |user|
-          puts user.user_id
-          if user.user_id == ask.user_id
-            if user.btc_balance - order.amount >= 0
-              user.btc_balance = user.btc_balance - order.amount
-              user.eur_balance = user.eur_balance + bid.amount * bid.price - bid_fee / 2
-              user.close_order(ask.order_id)
-            else
-              puts "Insufficient btc_balance \n"
-              puts user.btc_balance.round(8).to_s("F")
-              puts order.amount.round(8).to_s("F")
-              return false
-            end
-          end
-          if user.user_id == bid.user_id
-            if user.eur_balance - ask.amount * ask.price >= 0
-              user.btc_balance = user.btc_balance + order.amount
-              user.eur_balance = user.eur_balance - ask.amount * ask.price  - bid_fee / 2
-              user.close_order(bid.order_id)
-            else
-              puts "Insufficient funds \n"
-              puts user.eur_balance.round(8).to_s("F")
-              puts (ask.amount * ask.price).round(8).to_s("F")
-              return false
-            end
-          end
-        end
-
-        users.first.eur_balance = users.first.eur_balance + bid_fee
-        puts "Fee user have:"
-        puts users.first.eur_balance.round(8).to_s("F")
-
-        #see users and balances
-        users.each do |user|
-          puts "User #{user.user_id} has #{user.btc_balance.to_s("F")} BTC and #{user.eur_balance.to_s("F")} EUR"
-        end
-
-        #delete this order from orders if bid and ask match
-        orders.delete_if { order.order_id == bid.order_id || order.order_id == ask.order_id}   
-
-        #see orders
-        orders.each do |order|
-          puts "Order number #{order.order_id} has #{order.amount.to_s("F")} BTC and #{order.price.to_s("F")} EUR"
-        end
-
-        #save the match
-        @matches << {
-          "order_id" => bid.order_id,
-          "amount" => bid.amount,
-          "price" => bid.price,
-          "side" => bid.side,
-          "timestamp" => Time.now
-        }
-      end
-    puts "no match"
-    end
-  end 
+  
 end
